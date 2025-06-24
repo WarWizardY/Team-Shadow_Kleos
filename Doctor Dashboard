@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Advanced Health Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #f0f4f8, #e0ecf9);
+      min-height: 100vh;
+      transition: background 0.3s ease;
+      margin: 0;
+      padding: 0;
+    }
+    body.dark {
+      background: #1e1e2f;
+      color: white;
+    }
+    header {
+      background: #007bff;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .nav-link {
+      color: white !important;
+      margin-left: 15px;
+    }
+    .dashboard-card {
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      background: white;
+      margin-bottom: 1.5rem;
+    }
+    body.dark .dashboard-card {
+      background: #2b2b3d;
+    }
+    .chatbot {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 320px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-header {
+      background: #007bff;
+      color: white;
+      padding: 10px;
+      font-weight: bold;
+      border-top-left-radius: 15px;
+      border-top-right-radius: 15px;
+    }
+    .chat-body {
+      padding: 10px;
+      height: 250px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+    }
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ddd;
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-bottom-left-radius: 15px;
+      font-size: 1rem;
+    }
+    .chat-input button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-bottom-right-radius: 15px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .notification {
+      background: #ffcccc;
+      color: #900;
+      padding: 0.75rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+    .dark-mode-toggle {
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: white;
+      margin-left: 1rem;
+    }
+    .game-section {
+      background: #fff7e6;
+      padding: 1rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-top: 2rem;
+    }
+    body.dark .game-section {
+      background: #333;
+      color: white;
+    }
+    .game-box {
+      background: #ffe599;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 1rem;
+      text-align: center;
+    }
+    .game-box button {
+      margin-top: 1rem;
+    }
+    /* Messages styling */
+    .bot-msg {
+      background-color: #e2e2f7;
+      padding: 8px 12px;
+      margin: 5px 0;
+      border-radius: 15px;
+      max-width: 80%;
+      align-self: flex-start;
+      font-size: 0.9rem;
+    }
+    .user-msg {
+      background-color: #007bff;
+      color: white;
+      padding: 8px 12px;
+      margin: 5px 0;
+      border-radius: 15px;
+      max-width: 80%;
+      align-self: flex-end;
+      font-size: 0.9rem;
+    }
+    /* Diet Management Styles */
+    #mealSuggestions ul {
+      padding-left: 1.2rem;
+    }
+    #mealSuggestions h5 {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Advanced Health Management</h1>
+  <nav class="nav">
+    <a class="nav-link" href="#">Dashboard</a>
+    <a class="nav-link" href="#">Patients</a>
+    <a class="nav-link" href="#">Analytics</a>
+    <a class="nav-link" href="#">Reports</a>
+    <a class="nav-link" href="#">Games</a>
+    <a class="nav-link" href="#">Settings</a>
+    <span class="dark-mode-toggle bi bi-moon-stars" onclick="toggleDarkMode()" title="Toggle Dark Mode"></span>
+  </nav>
+</header>
+
+<div class="container py-4">
+ <div id="notificationArea" class="notification">
+  <strong>System Alert:</strong> No current alerts.
+</div>
+<script>
+  const alerts = [
+    { room: "101", patient: "John Doe", issue: "High Blood Pressure" },
+    { room: "203", patient: "Alice Smith", issue: "Low Oxygen Level" },
+    { room: "310", patient: "Carlos Mendez", issue: "Irregular Heart Rate" },
+    { room: "122", patient: "Emily White", issue: "Fever Spike" },
+    { room: "415", patient: "David Tan", issue: "Respiratory Distress" }
+  ];
+
+  function showRandomAlert() {
+    const alertArea = document.getElementById('notificationArea');
+    const randomAlert = alerts[Math.floor(Math.random() * alerts.length)];
+    
+    alertArea.innerHTML = `
+      <strong>System Alert:</strong> 
+      Patient <strong>${randomAlert.patient}</strong> in 
+      <strong>Room ${randomAlert.room}</strong> requires attention 
+      <span class="badge bg-danger ms-2">${randomAlert.issue}</span>.
+    `;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    showRandomAlert();                         // Initial alert
+    setInterval(showRandomAlert, 10000);       // Refresh every 20 seconds
+  });
+</script>
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="dashboard-card text-center">
+      <h5>Average Vitals</h5>
+      <ul class="list-unstyled">
+        <li>💓 Heart Rate: <strong>78 bpm</strong></li>
+        <li>🌡️ Temperature: <strong>98.6 °F</strong></li>
+        <li>🩸 Blood Pressure: <strong>120/80 mmHg</strong></li>
+        <li>🫁 Oxygen Level: <strong>96%</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Bed Availability -->
+  <div class="col-md-6">
+    <div class="dashboard-card text-center">
+      <h5>Bed Availability</h5>
+      <p>🛏️ ICU Beds: <strong>3 / 10</strong></p>
+      <p>🛏️ General Beds: <strong>12 / 30</strong></p>
+      <button class="btn btn-outline-success btn-sm mt-2">Manage Beds</button>
+    </div>
+  </div>
+</div>
+<div class="dashboard-card mt-4 text-center">
+  <h4>🚨 Emergency Actions</h4>
+  <div class="d-flex justify-content-center gap-3 flex-wrap mt-3">
+    <button class="btn btn-danger"><i class="bi bi-telephone-fill"></i> Call Emergency</button>
+    <button class="btn btn-warning"><i class="bi bi-bell-fill"></i> Sound Alert</button>
+
+  </div>
+</div>
+
+<div class="dashboard-card mt-4">
+  <h4>🌤️ Local Weather & Air Quality</h4>
+  <p><strong>Location:</strong> New York City</p>
+  <p><i class="bi bi-thermometer-sun"></i> Temperature: 72°F</p>
+  <p><i class="bi bi-cloud-sun"></i> Conditions: Partly Cloudy</p>
+  <p><i class="bi bi-wind"></i> AQI: 42 (Good)</p>
+</div>
+
+<div class="dashboard-card mt-4">
+  <h4>🗣️ Patient Feedback</h4>
+  <blockquote class="blockquote mb-0">
+    <p>"The staff were attentive and the dashboard made everything easier!"</p>
+    <footer class="blockquote-footer">Jane D., <cite>Cardiology Ward</cite></footer>
+  </blockquote>
+</div>
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
+}
+
+
+  <div class="row g-4">
+    <div class="col-md-3">
+      <div class="dashboard-card text-center">
+        <h5>Total Patients</h5>
+        <h2>1,234</h2>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="dashboard-card text-center">
+        <h5>Appointments</h5>
+        <h2>321</h2>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="dashboard-card text-center">
+        <h5>Critical Alerts</h5>
+        <h2>7</h2>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="dashboard-card text-center">
+        <h5>Doctors Online</h5>
+        <h2>12</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-lg-8">
+      <div class="dashboard-card">
+        <h4>Patient Trends</h4>
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="dashboard-card">
+        <h4>Next Appointments</h4>
+        <ul>
+          <li>10:00 AM - Jane Doe (General)</li>
+          <li>11:15 AM - Mark Lee (Dermatology)</li>
+          <li>12:30 PM - Anna Kim (Cardiology)</li>
+        </ul>
+        <button class="btn btn-sm btn-outline-primary mt-2" onclick="downloadAppointmentsReport()">Download Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Diet Management System -->
+  <div class="dashboard-card mt-4">
+    <h4>Diet Management System</h4>
+    <form id="dietForm">
+      <div class="mb-3">
+        <label for="calorieInput" class="form-label">Enter your daily calorie intake goal (kcal):</label>
+        <input type="number" class="form-control" id="calorieInput" placeholder="e.g., 2000" required min="100" />
+      </div>
+      <button type="submit" class="btn btn-primary">Get Meal Suggestions</button>
+    </form>
+    <div id="mealSuggestions" class="mt-3"></div>
+  </div>
+
+  <div class="game-section">
+    <h4>🧠 Patient Game Zone</h4>
+
+  <h5>Health Quiz</h5>
+  <p>Test your knowledge with this quick quiz.</p>
+  <div id="quizGame">
+    <div id="quizQuestion" class="mb-2"></div>
+    <div id="quizOptions"></div>
+    <button class="btn btn-info mt-2" onclick="startQuiz()">Start Quiz</button>
+  </div>
+</div>
+<script>
+  const quizData = [
+    {
+      question: "What is the normal body temperature?",
+      options: ["35°C", "36.5°C", "37°C", "38°C"],
+      answer: "37°C"
+    },
+    {
+      question: "How many chambers are there in the human heart?",
+      options: ["2", "3", "4", "5"],
+      answer: "4"
+    },
+    {
+      question: "What nutrient is important for strong bones?",
+      options: ["Vitamin A", "Vitamin C", "Vitamin D", "Vitamin K"],
+      answer: "Vitamin D"
+    }
+  ];
+
+  let currentQuestion = 0;
+  let score = 0;
+
+  function startQuiz() {
+    score = 0;
+    currentQuestion = 0;
+    showQuestion();
+  }
+
+  function showQuestion() {
+    const q = quizData[currentQuestion];
+    const questionDiv = document.getElementById('quizQuestion');
+    const optionsDiv = document.getElementById('quizOptions');
+    questionDiv.textContent = q.question;
+    optionsDiv.innerHTML = '';
+
+    q.options.forEach(option => {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-sm btn-outline-secondary me-2 mb-2';
+      btn.textContent = option;
+      btn.onclick = () => checkAnswer(option);
+      optionsDiv.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(selected) {
+    const correct = quizData[currentQuestion].answer;
+    if (selected === correct) {
+      score++;
+      alert("Correct!");
+    } else {
+      alert(`Wrong! Correct answer: ${correct}`);
+    }
+
+    currentQuestion++;
+    if (currentQuestion < quizData.length) {
+      showQuestion();
+    } else {
+      document.getElementById('quizQuestion').textContent = `Quiz Completed! Your score: ${score}/${quizData.length}`;
+      document.getElementById('quizOptions').innerHTML = '';
+    }
+  }
+</script>
+
+    </div>
+    <div class="game-box">
+      <h5>Reaction Test</h5>
+      <p>Test how quickly you can respond!</p>
+      <button class="btn btn-success" onclick="alert('Game loading... (future integration)')">Play</button>
+    </div>
+  </div>
+</div>
+
+<div class="chatbot">
+  <div class="chat-header">AI Assistant</div>
+  <div class="chat-body" id="chatBody">
+    <div class="bot-msg">Hello! Need help with your dashboard?</div>
+  </div>
+  <div class="chat-input">
+    <input type="text" id="chatInput" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+  // Chart.js Patient Trends Line Chart
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+      datasets: [{
+        label: 'New Patients',
+        data: [120, 190, 300, 500, 200],
+        backgroundColor: 'rgba(0,123,255,0.4)',
+        borderColor: '#007bff',
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: true } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+
+  // Chatbot message sending simulation
+  function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const chatBody = document.getElementById('chatBody');
+    const msg = input.value.trim();
+    if (!msg) return;
+    chatBody.innerHTML += `<div class='user-msg'>${msg}</div>`;
+    input.value = '';
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    setTimeout(() => {
+      chatBody.innerHTML += `<div class='bot-msg'>This is a simulated response. (AI Integration Pending)</div>`;
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }, 800);
+  }
+
+  // Dark mode toggle
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+  }
+
+  // Diet Management Form Submit Handler
+  document.getElementById('dietForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const calorieGoal = parseInt(document.getElementById('calorieInput').value);
+    const suggestionsDiv = document.getElementById('mealSuggestions');
+
+    if (!calorieGoal || calorieGoal < 100) {
+      suggestionsDiv.innerHTML = `<div class="text-danger">Please enter a valid calorie intake greater than 100.</div>`;
+      return;
+    }
+
+    let mealPlan = '';
+    if (calorieGoal <= 1500) {
+      mealPlan = `
+        <h5>Low Calorie Meal Plan</h5>
+        <ul>
+          <li>Breakfast: Oatmeal with berries (300 kcal)</li>
+          <li>Lunch: Grilled chicken salad (450 kcal)</li>
+          <li>Dinner: Steamed fish with veggies (550 kcal)</li>
+          <li>Snacks: Greek yogurt (150 kcal)</li>
+        </ul>`;
+    } else if (calorieGoal <= 2500) {
+      mealPlan = `
+        <h5>Moderate Calorie Meal Plan</h5>
+        <ul>
+          <li>Breakfast: Eggs and toast with avocado (500 kcal)</li>
+          <li>Lunch: Turkey sandwich with salad (700 kcal)</li>
+          <li>Dinner: Beef stir fry with rice (900 kcal)</li>
+          <li>Snacks: Mixed nuts (200 kcal)</li>
+        </ul>`;
+    } else {
+      mealPlan = `
+        <h5>High Calorie Meal Plan</h5>
+        <ul>
+          <li>Breakfast: Pancakes with syrup and fruit (700 kcal)</li>
+          <li>Lunch: Pasta with chicken and cheese (900 kcal)</li>
+          <li>Dinner: Steak with potatoes and veggies (1000 kcal)</li>
+          <li>Snacks: Protein shake (300 kcal)</li>
+        </ul>`;
+    }
+
+    suggestionsDiv.innerHTML = mealPlan;
+  });
+</script>
+
+<script>
+  function downloadAppointmentsReport() {
+    const appointments = [
+      "10:00 AM - Jane Doe (General)",
+      "11:15 AM - Mark Lee (Dermatology)",
+      "12:30 PM - Anna Kim (Cardiology)"
+    ];
+
+    const reportContent = `Next Appointments Report\n-------------------------\n${appointments.join('\n')}`;
+
+    const blob = new Blob([reportContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'appointments_report.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>
+
+</body>
+</html>

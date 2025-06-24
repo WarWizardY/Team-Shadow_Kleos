@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Doctor or Patient</title>
+  <style>
+    /* Reset and base styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top left, #4facfe 0%, #00f2fe 80%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .login-container {
+      background: #fff;
+      padding: 3rem 2.5rem 2.5rem;
+      border-radius: 20px;
+      box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.1),
+        0 4px 15px rgba(0, 0, 0, 0.05);
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-container::before,
+    .login-container::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.3;
+      z-index: 0;
+    }
+
+    .login-container::before {
+      width: 200px;
+      height: 200px;
+      background: #4facfe;
+      top: -70px;
+      right: -70px;
+    }
+
+    .login-container::after {
+      width: 250px;
+      height: 250px;
+      background: #00f2fe;
+      bottom: -90px;
+      left: -90px;
+    }
+
+    /* Tab navigation */
+    .tab-header {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2rem;
+      user-select: none;
+      position: relative;
+      z-index: 2;
+    }
+
+    .tab-header button {
+      flex: 1;
+      padding: 0.9rem 0;
+      background: transparent;
+      border: none;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: #555;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: color 0.3s ease, border-color 0.3s ease;
+      position: relative;
+      z-index: 2;
+    }
+
+    .tab-header button.active {
+      color: #4facfe;
+      border-color: #4facfe;
+    }
+
+    /* Forms container */
+    .forms {
+      position: relative;
+      min-height: 320px;
+      overflow: hidden;
+    }
+
+    form {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      user-select: none;
+      background: white;
+      border-radius: 0 0 20px 20px;
+      padding-bottom: 2.5rem;
+      box-sizing: border-box;
+
+      /* Prepare for animation */
+      opacity: 0;
+      transform: translateX(50px);
+      pointer-events: none;
+      transition:
+        opacity 0.4s ease,
+        transform 0.4s ease;
+    }
+
+    form.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+      z-index: 1;
+      transition-delay: 0.1s;
+    }
+
+    form.exit-left {
+      opacity: 0;
+      transform: translateX(-50px);
+      pointer-events: none;
+      transition-delay: 0s;
+    }
+
+    form h2 {
+      font-weight: 700;
+      font-size: 2.25rem;
+      margin-bottom: 2rem;
+      color: #222;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.35rem;
+      color: #555;
+      display: block;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+      border-radius: 12px;
+      border: 2px solid #ddd;
+      margin-bottom: 1.4rem;
+      outline-offset: 4px;
+      outline-color: transparent;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+      background-color: #fafafa;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    input[type="email"]:focus,
+    input[type="password"]:focus {
+      border-color: #4facfe;
+      box-shadow: 0 0 8px rgba(79,172,254, 0.7);
+      background-color: white;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #4facfe;
+      margin-right: 0.7rem;
+      transition: accent-color 0.3s ease;
+    }
+
+    .checkbox-container input[type="checkbox"]:hover {
+      accent-color: #00c3ff;
+    }
+
+    button {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      border: none;
+      padding: 0.95rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 14px;
+      color: white;
+      cursor: pointer;
+      box-shadow:
+        0 6px 10px rgba(79,172,254, 0.6);
+      letter-spacing: 1.05px;
+      user-select: none;
+      transition:
+        box-shadow 0.3s ease,
+        transform 0.2s ease,
+        filter 0.3s ease;
+      width: 100%;
+    }
+
+    button:hover {
+      box-shadow:
+        0 12px 25px rgba(79,172,254, 0.85);
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow:
+        0 6px 10px rgba(79,172,254, 0.6);
+      filter: brightness(1);
+    }
+
+    .register-link {
+      margin-top: 1.8rem;
+      text-align: center;
+      font-size: 0.95rem;
+      color: #555;
+      user-select: none;
+      font-weight: 500;
+    }
+
+    .register-link a {
+      color: #4facfe;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .register-link a:hover {
+      color: #00c3ff;
+      text-decoration: underline;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 2rem 1.5rem;
+        border-radius: 16px;
+      }
+
+      form h2 {
+        font-size: 1.8rem;
+      }
+
+      button {
+        font-size: 1rem;
+        padding: 0.8rem;
+        border-radius: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="tab-header" role="tablist">
+      <button id="doctor-tab" class="active" aria-controls="doctor-form" role="tab" aria-selected="true" tabindex="0">Doctor</button>
+      <button id="patient-tab" aria-controls="patient-form" role="tab" aria-selected="false" tabindex="-1">Patient</button>
+    </div>
+
+    <div class="forms">
+      <form id="doctor-form" class="active" action="doctor_login.php" method="POST" role="tabpanel" aria-labelledby="doctor-tab" novalidate>
+        <h2>Doctor Login</h2>
+        <label for="doctor-email">Email</label>
+        <input type="email" id="doctor-email" name="email" placeholder="doctor@example.com" required />
+
+        <label for="doctor-password">Password</label>
+        <input type="password" id="doctor-password" name="password" placeholder="••••••••" required minlength="6" />
+
+        <div class="checkbox-container">
+          <input type="checkbox" id="doctor-remember" name="remember" />
+          <label for="doctor-remember">Remember me</label>
+        </div>
+
+        <button type="submit">Log In as Doctor</button>
+
+        <p class="register-link">
+          Don't have an account? <a href="doctor_register.html">Register here</a>
+        </p>
+      </form>
+
+      <form id="patient-form" action="patient_login.php" method="POST" role="tabpanel" aria-labelledby="patient-tab" novalidate>
+        <h2>Patient Login</h2>
+        <label for="patient-email">Email</label>
+        <input type="email" id="patient-email" name="email
+        <input type="email" id="patient-email" name="email" placeholder="patient@example.com" required />
+
+        <label for="patient-password">Password</label>
+        <input type="password" id="patient-password" name="password" placeholder="••••••••" required minlength="6" />
+
+        <div class="checkbox-container">
+          <input type="checkbox" id="patient-remember" name="remember" />
+          <label for="patient-remember">Remember me</label>
+        </div>
+
+        <button type="submit">Log In as Patient</button>
+
+        <p class="register-link">
+          Don't have an account? <a href="patient_register.html">Register here</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const doctorTab = document.getElementById('doctor-tab');
+    const patientTab = document.getElementById('patient-tab');
+    const doctorForm = document.getElementById('doctor-form');
+    const patientForm = document.getElementById('patient-form');
+
+    function activateTab(selectedTab, selectedForm, otherTab, otherForm) {
+      if (selectedTab.classList.contains('active')) return;
+
+      // Update tab button states
+      selectedTab.classList.add('active');
+      selectedTab.setAttribute('aria-selected', 'true');
+      selectedTab.setAttribute('tabindex', '0');
+
+      otherTab.classList.remove('active');
+      otherTab.setAttribute('aria-selected', 'false');
+      otherTab.setAttribute('tabindex', '-1');
+
+      // Animate forms
+      otherForm.classList.remove('active');
+      otherForm.classList.add('exit-left');
+      // Wait for exit animation to finish before hiding
+      setTimeout(() => {
+        otherForm.classList.remove('exit-left');
+      }, 400);
+
+      selectedForm.classList.add('active');
+    }
+
+    doctorTab.addEventListener('click', () => {
+      activateTab(doctorTab, doctorForm, patientTab, patientForm);
+    });
+
+    patientTab.addEventListener('click', () => {
+      activateTab(patientTab, patientForm, doctorTab, doctorForm);
+    });
+
+    // Accessibility: allow switching tabs via keyboard
+    doctorTab.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        patientTab.focus();
+      }
+    });
+
+    patientTab.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        doctorTab.focus();
+      }
+    });
+  </script>
+</body>
+</html>
+
